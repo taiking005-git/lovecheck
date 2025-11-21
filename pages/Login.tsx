@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardContent, CardHeader } from '../components/ui/Card';
+import { Toast } from '../components/ui/Toast';
 
 export const Login: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -11,7 +12,7 @@ export const Login: React.FC = () => {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,8 +35,20 @@ export const Login: React.FC = () => {
     }
   };
 
+  React.useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <Toast
+        message={error}
+        type="error"
+        isVisible={!!error}
+        onClose={() => setError('')}
+      />
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           {isSignUp ? 'Create your account' : 'Sign in to your account'}
@@ -72,21 +85,11 @@ export const Login: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
               />
 
-              {error && (
-                <div className="rounded-md bg-red-50 p-4">
-                  <div className="flex">
-                    <div className="text-sm text-red-700">
-                      {error}
-                    </div>
-                  </div>
-                </div>
-              )}
-
               <Button type="submit" className="w-full" isLoading={loading}>
                 {isSignUp ? 'Sign Up' : 'Sign In'}
               </Button>
             </form>
-            
+
             <div className="mt-6">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">

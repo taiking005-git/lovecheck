@@ -5,6 +5,7 @@ import { EvaluationRequest, AggregatedScore } from '../types';
 import { Button } from '../components/ui/Button';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
+import { Toast } from "../components/ui/Toast";
 import {
   Radar,
   RadarChart,
@@ -24,6 +25,15 @@ export const Dashboard: React.FC = () => {
   const [newLabel, setNewLabel] = useState('');
   const [allowAnon, setAllowAnon] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info'; isVisible: boolean }>({
+    message: '',
+    type: 'info',
+    isVisible: false,
+  });
+
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setToast({ message, type, isVisible: true });
+  };
 
   useEffect(() => {
     if (user) {
@@ -56,18 +66,53 @@ export const Dashboard: React.FC = () => {
     setIsCreating(false);
     setNewLabel('');
     loadData();
+    showToast('New evaluation link created!', 'success');
   };
 
-  const copyLink = (id: string) => {
+  const copyLink = async (id: string) => {
     const url = `${window.location.origin}/#/evaluate/${id}`;
-    navigator.clipboard.writeText(url);
-    alert("Link copied to clipboard!");
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url);
+        showToast('Link copied to clipboard!', 'success');
+      } else {
+        // Fallback for older browsers or non-secure contexts
+        const textArea = document.createElement("textarea");
+        textArea.value = url;
+        textArea.style.position = "fixed"; // Avoid scrolling to bottom
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+          const successful = document.execCommand('copy');
+          if (successful) {
+            showToast('Link copied to clipboard!', 'success');
+          } else {
+            showToast('Failed to copy link manually', 'error');
+          }
+        } catch (err) {
+          showToast('Failed to copy link', 'error');
+        }
+
+        document.body.removeChild(textArea);
+      }
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      showToast('Failed to copy link', 'error');
+    }
   };
 
   if (loading) return <div className="p-12 text-center text-gray-500">Loading dashboard...</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={() => setToast(prev => ({ ...prev, isVisible: false }))}
+      />
       <div className="md:flex md:items-center md:justify-between mb-8">
         <div className="flex-1 min-w-0">
           <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
@@ -78,7 +123,7 @@ export const Dashboard: React.FC = () => {
           <Button variant="outline" onClick={() => {
             const url = `${window.location.origin}/#/profile/${user?.uid}`;
             navigator.clipboard.writeText(url);
-            alert("Profile link copied to clipboard!");
+            showToast('Profile link copied to clipboard!', 'success');
           }}>
             <Share2 className="-ml-1 mr-2 h-5 w-5" />
             Share Profile
@@ -299,8 +344,8 @@ export const Dashboard: React.FC = () => {
                   </div>
 
                   <div className="mt-4 pt-4 border-t border-gray-100 flex space-x-2">
-                    <Button variant="outline" onClick={() => copyLink(req.id)} className="flex-1 text-xs h-8">
-                      <Copy className="h-3 w-3 mr-2" />
+                    <Button variant="outline" onClick={() => copyLink(req.id)} className="flex-1 text-sm h-10">
+                      <Copy className="h-4 w-4 mr-2" />
                       Copy Link
                     </Button>
                   </div>
