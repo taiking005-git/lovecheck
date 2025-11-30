@@ -22,6 +22,7 @@ export const Dashboard: React.FC = () => {
   const [requests, setRequests] = useState<EvaluationRequest[]>([]);
   const [aggregates, setAggregates] = useState<AggregatedScore[]>([]);
   const [isCreating, setIsCreating] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [newLabel, setNewLabel] = useState('');
   const [allowAnon, setAllowAnon] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -62,11 +63,19 @@ export const Dashboard: React.FC = () => {
     e.preventDefault();
     if (!user || !newLabel) return;
 
-    await db.createRequest(user.uid, newLabel, allowAnon);
-    setIsCreating(false);
-    setNewLabel('');
-    loadData();
-    showToast('New evaluation link created!', 'success');
+    setIsGenerating(true);
+    try {
+      await db.createRequest(user.uid, newLabel, allowAnon);
+      setIsCreating(false);
+      setNewLabel('');
+      loadData();
+      showToast('New evaluation link created!', 'success');
+    } catch (error) {
+      console.error("Error creating request:", error);
+      showToast('Failed to create link. Please try again.', 'error');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const copyLink = async (id: string) => {
@@ -163,7 +172,14 @@ export const Dashboard: React.FC = () => {
                     Allow Anonymous
                   </label>
                 </div>
-                <Button type="submit" className="w-full md:w-auto mb-[2px]">Generate Link</Button>
+                <Button
+                  type="submit"
+                  className="w-full md:w-auto mb-[2px]"
+                  isLoading={isGenerating}
+                  loadingText="Generating Link..."
+                >
+                  Generate Link
+                </Button>
               </form>
             </CardContent>
           </Card>

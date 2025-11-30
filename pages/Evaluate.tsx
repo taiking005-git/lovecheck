@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { db } from '../services/db';
-import { CORE_TRAITS } from '../constants';
+import { CORE_TRAITS, RELATIONSHIP_TYPES } from '../constants';
 import { EvaluationRequest, EvaluatorResponse, Rating } from '../types';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -11,7 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 export const Evaluate: React.FC = () => {
   const { requestId } = useParams<{ requestId: string }>();
   const navigate = useNavigate();
-  
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [requestData, setRequestData] = useState<{ request: EvaluationRequest, userName: string } | null>(null);
@@ -30,9 +30,11 @@ export const Evaluate: React.FC = () => {
       if (!requestId) return;
       try {
         const data = await db.getPublicRequestInfo(requestId);
+
+        console.log(data);
         if (!data) throw new Error("Invalid evaluation link or link expired.");
         setRequestData(data);
-        
+
         // Initialize ratings to 5 (middle)
         const initialRatings: Record<string, number> = {};
         CORE_TRAITS.forEach(t => initialRatings[t.id] = 5);
@@ -134,15 +136,27 @@ export const Evaluate: React.FC = () => {
                   disabled={isAnonymous}
                   required={!isAnonymous}
                 />
-                <Input
-                  label="Relationship (e.g., Friend, Spouse)"
-                  value={relationship}
-                  onChange={(e) => setRelationship(e.target.value)}
-                  required
-                />
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Relationship
+                  </label>
+                  <select
+                    value={relationship}
+                    onChange={(e) => setRelationship(e.target.value)}
+                    required
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-brand-500 focus:border-brand-500 sm:text-sm bg-white"
+                  >
+                    <option value="" disabled>Select a relationship</option>
+                    {RELATIONSHIP_TYPES.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
               {requestData?.request.allowAnonymous && (
-                 <div className="flex items-center mt-2">
+                <div className="flex items-center mt-2">
                   <input
                     id="anon_eval"
                     type="checkbox"
@@ -172,11 +186,11 @@ export const Evaluate: React.FC = () => {
                       <h4 className="text-lg font-bold text-gray-900">{trait.name}</h4>
                       <span className="text-xs font-mono text-gray-400">{trait.verseReference}</span>
                     </div>
-                    <p className="text-sm text-gray-500">{trait.description}</p>
+                    <p className="text-sm text-gray-500">{requestData?.userName + " " + trait.description}</p>
                   </div>
-                  
+
                   <div className="relative pt-6 pb-2">
-                     <input
+                    <input
                       type="range"
                       min="1"
                       max="10"

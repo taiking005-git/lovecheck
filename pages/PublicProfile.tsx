@@ -35,7 +35,18 @@ export const PublicProfile: React.FC = () => {
                 db.getUserRequests(uid)
             ]);
 
-            setProfileUser(user);
+            if (!user) {
+                // Fallback if user profile is missing but requests exist
+                setProfileUser({
+                    uid: uid,
+                    name: "User",
+                    email: "",
+                    createdAt: Date.now()
+                });
+            } else {
+                setProfileUser(user);
+            }
+
             setRequests(reqs);
 
             const allResponses = reqs.flatMap(r => r.responses);

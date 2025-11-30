@@ -9,6 +9,7 @@ import { Toast } from '../components/ui/Toast';
 export const Login: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,12 +24,13 @@ export const Login: React.FC = () => {
     try {
       if (isSignUp) {
         if (!name) throw new Error("Name is required");
-        await signUp(name, email);
+        await signUp(name, email, password);
       } else {
-        await signIn(email);
+        await signIn(email, password);
       }
       navigate('/dashboard');
     } catch (err: any) {
+      console.error(err);
       setError(err.message || "An error occurred");
     } finally {
       setLoading(false);
@@ -84,27 +86,21 @@ export const Login: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
+              <Input
+                label="Password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                minLength={6}
+              />
 
               <Button type="submit" className="w-full" isLoading={loading}>
                 {isSignUp ? 'Sign Up' : 'Sign In'}
               </Button>
             </form>
 
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">
-                    For demo purposes
-                  </span>
-                </div>
-              </div>
-              <p className="mt-4 text-xs text-center text-gray-500">
-                Use any email to "Login" if previously registered in this session, or "Sign Up" to create a mock user. Data persists in LocalStorage.
-              </p>
-            </div>
+
           </CardContent>
         </Card>
       </div>

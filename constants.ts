@@ -16,6 +16,31 @@ export const CORE_TRAITS: Trait[] = [
   { id: 'perseverance', name: 'Perseverance', description: 'Always perseveres.', verseReference: '13:7', order: 13 },
 ];
 
+export const RELATIONSHIP_TYPES = [
+  'Spouse',
+  'Fiancé(e)',
+  'Boyfriend/Girlfriend',
+  'Parent',
+  'Child',
+  'Sibling',
+  'Family Member',
+  'Friend',
+  'Best Friend',
+  'Roommate',
+  'Colleague/Coworker',
+  'Manager/Boss',
+  'Employee/Direct Report',
+  'Mentor',
+  'Mentee',
+  'Pastor/Spiritual Leader',
+  'Church Member',
+  'Small Group Member',
+  'Teacher/Professor',
+  'Student',
+  'Neighbor',
+  'Other'
+];
+
 export const STORAGE_KEYS = {
   USERS: 'lovecheck_users',
   REQUESTS: 'lovecheck_requests',
